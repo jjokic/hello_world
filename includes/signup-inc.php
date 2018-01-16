@@ -1,6 +1,7 @@
 <?php
 
-if(isset($_POST['submit'])) {
+if(!is_null($_POST['submit'])) {
+    echo 'NIJE NULL';
     include_once('db.php');
     
     $first = mysqli_real_escape_string($conn, $_POST['first']);
@@ -11,19 +12,22 @@ if(isset($_POST['submit'])) {
     
     $empty = FALSE;
     
-    foreach($_POST as $submit)
-        if(is_empty($submit))
+    foreach($_POST as $key => $value)
+        if(empty($value)) {
             $empty = TRUE;
+            echo "POST parameter '$key' has '$value'";
+        }
     
     if($empty){
-        header("Location: ../signup.php?signup=empty");
-        exit();
+       # header("Location: ../signup.php?signup=empty");
+         exit();
     }
     
     // Provjeri ako je ime i prezime okej!
     else {
-        if(!preg_match("/^[a-zA-Z]*?", $first) || !preg_match("/^[a-zA-Z]*?", $last) ) {
-            header("Location: ../signup.php?signup=invalid");
+        if(!preg_match("/^[a-zA-Z]*$/", $first) || !preg_match("/^[a-zA-Z]*$/", $last) ) {
+            echo "<h3>Ime nije okej</h3> <br/> $first . $last";
+        #    header("Location: ../signup.php?signup=invalid");
             exit();
         } 
          // Provjeri ispravnost e-maila
@@ -34,8 +38,10 @@ if(isset($_POST['submit'])) {
             }
             // Provjeri ako imamo vec korisnika s tim uid
             else {
-                $sql = "SELECT * FROM users WHERE user_uid='$uid'";
+                $sql = "SELECT * FROM USERS WHERE user_uid='$uid'";
+#               echo "<h3>Upit: $sql</h3>";
                 $result = mysqli_query($conn, $sql);
+#               print_r($result);
                 $resCheck = mysqli_num_rows($result);
                 
                 if($resCheck > 0) {
@@ -44,20 +50,27 @@ if(isset($_POST['submit'])) {
                 }
                 // Hash the password
                 else {
-                    $hash_pwd = password_hash($pwd, PASSWORD_DEFAULT)
+                    $hash_pwd = password_hash($pwd, PASSWORD_DEFAULT);
                     // Insert the user into the DB
                     $stmt = $conn->prepare("INSERT INTO users(user_first, user_last, user_email, user_uid, user_pwd) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssss", $firstname, $lastname, $email, $uid, $pwd);
+                    $stmt->bind_param("sssss", $firstname, $lastname, $email, $uid, $hash_pwd);
+                    $result = $stmt->execute();
+                    print($result);
+                    echo "New records created successfully";
+
+                    $stmt->close();
+                    $conn->close();
                 }
             }
             
         }
-   
         
     }
-
-
+}
+    
 else { 
     header("Location: ../signup.php");
     exit();
 }
+
+?>

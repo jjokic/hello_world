@@ -11,7 +11,7 @@ include_once 'header.php';
             <input type="text" name="email" placeholder="E-mail">
             <input type="text" name="uid" placeholder="Username">
             <input type="password" name="pwd" placeholder="password">
-            <button type="submit" name="submit">Signu Up</button>
+            <button type="submit" name="submit" value="set">Signu Up</button>
         </form>
     </div>
 </section>
