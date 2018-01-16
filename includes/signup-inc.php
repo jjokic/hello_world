@@ -1,7 +1,6 @@
 <?php
 
 if(!is_null($_POST['submit'])) {
-    echo 'NIJE NULL';
     include_once('db.php');
     
     $first = mysqli_real_escape_string($conn, $_POST['first']);
@@ -13,21 +12,18 @@ if(!is_null($_POST['submit'])) {
     $empty = FALSE;
     
     foreach($_POST as $key => $value)
-        if(empty($value)) {
+        if(empty($value))
             $empty = TRUE;
-            echo "POST parameter '$key' has '$value'";
-        }
-    
+  
     if($empty){
-       # header("Location: ../signup.php?signup=empty");
+         header("Location: ../signup.php?signup=empty");
          exit();
     }
     
     // Provjeri ako je ime i prezime okej!
     else {
         if(!preg_match("/^[a-zA-Z]*$/", $first) || !preg_match("/^[a-zA-Z]*$/", $last) ) {
-            echo "<h3>Ime nije okej</h3> <br/> $first . $last";
-        #    header("Location: ../signup.php?signup=invalid");
+            header("Location: ../signup.php?signup=invalid");
             exit();
         } 
          // Provjeri ispravnost e-maila
@@ -52,10 +48,18 @@ if(!is_null($_POST['submit'])) {
                 else {
                     $hash_pwd = password_hash($pwd, PASSWORD_DEFAULT);
                     // Insert the user into the DB
-                    $stmt = $conn->prepare("INSERT INTO users(user_first, user_last, user_email, user_uid, user_pwd) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssss", $firstname, $lastname, $email, $uid, $hash_pwd);
+                    $stmt = $conn->prepare("INSERT INTO USERS(user_first, user_last, user_email, user_uid, user_pwd) VALUES (?, ?, ?, ?, ?)");
+       
+                    $result = $stmt->bind_param("sssss", $first, $last, $email, $uid, $hash_pwd);
+                    if ( false===$result ) {
+                        die('bind_param() failed: ' . htmlspecialchars($stmt->error));
+                    }
+
                     $result = $stmt->execute();
-                    print($result);
+                    if ( false===$result) {
+                        die('execute() failed: ' . htmlspecialchars($stmt->error));
+                    }
+                    
                     echo "New records created successfully";
 
                     $stmt->close();
